@@ -4,17 +4,16 @@ import Pagination from "../Pagination";
 import { Person } from "../interfaces";
 import SearchSection from "../components/SearchSection";
 import ProfilePage from "../components/ProfilePage";
-import useLocalStorage from "../hooks/useLocalStorage";  // Импортируем кастомный хук
+import useLocalStorage from "../hooks/useLocalStorage"; 
 
 const Root: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");  // Хранит текущий текст поиска
-  const [people, setPeople] = useState<Person[]>([]);  // Хранит данные о людях
-  const [error, setError] = useState<string | null>(null);  // Хранит информацию об ошибке
-  const [loading, setLoading] = useState<boolean>(false);  // Хранит состояние загрузки данных
-  const [totalPages, setTotalPages] = useState<number>(1);  // Хранит общее количество страниц
-  const [currentPage, setCurrentPage] = useState<number>(1);  // Хранит текущую страницу
+  const [searchTerm, setSearchTerm] = useState(""); 
+  const [people, setPeople] = useState<Person[]>([]); 
+  const [error, setError] = useState<string | null>(null); 
+  const [loading, setLoading] = useState<boolean>(false); 
+  const [totalPages, setTotalPages] = useState<number>(1); 
+  const [currentPage, setCurrentPage] = useState<number>(1); 
 
-  // Используем кастомный хук для сохранения и получения searchTerm из localStorage
   const [storedSearchTerm, setStoredSearchTerm] = useLocalStorage("searchTerm", "");
 
   const location = useLocation();
@@ -58,37 +57,38 @@ const Root: React.FC = () => {
     fetchPeople();
   }, [fetchPeople]);
 
-  // Функция обработки ввода текста
+ 
   const handleInputChange = (term: string) => {
-    setSearchTerm(term);  // Обновляем searchTerm при изменении текста
+    setSearchTerm(term); 
   };
 
-  // Функция обработки нажатия на кнопку поиска
+ 
   const handleSearch = () => {
     const trimmedSearchTerm = searchTerm.trim();
     if (trimmedSearchTerm) {
-      setSearchParams({ search: trimmedSearchTerm, page: "1" });  // Обновляем URL с новым поисковым запросом
-      setStoredSearchTerm(trimmedSearchTerm);  // Сохраняем поисковый запрос в localStorage
+      setSearchParams({ search: trimmedSearchTerm, page: "1" }); 
+      setStoredSearchTerm(trimmedSearchTerm); 
     } else {
-      setSearchParams({ page: "1" });  // Если пустой поисковый запрос, очищаем параметры поиска
+      setSearchParams({ page: "1" }); 
+      setStoredSearchTerm(""); 
     }
-    setCurrentPage(1);  // Устанавливаем текущую страницу на 1 при новом поиске
+    setCurrentPage(1); 
   };
 
-  // Функция обработки изменения страницы
+ 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      setSearchParams({ search: searchTerm.trim(), page: page.toString() });  // Обновляем URL при изменении страницы
+      setSearchParams({ search: searchTerm.trim(), page: page.toString() }); 
     }
   };
 
-  // Функция обработки закрытия деталей
+ 
   const handleCloseDetails = () => {
-    setSearchParams({ page: currentPage.toString() });  // Обновляем URL при закрытии деталей
+    setSearchParams({ page: currentPage.toString() }); 
   };
 
-  // Устанавливаем searchTerm из localStorage при загрузке компонента
+ 
   useEffect(() => {
     setSearchTerm(storedSearchTerm);
   }, [storedSearchTerm]);
@@ -98,7 +98,7 @@ const Root: React.FC = () => {
       <div className="column sidebar">
         <SearchSection
           searchTerm={searchTerm}
-          onSearchTermChange={handleInputChange}  // Обновляем searchTerm при вводе текста
+          onSearchTermChange={handleInputChange} 
           onSearch={handleSearch} 
         />
         <div className="results-section">
