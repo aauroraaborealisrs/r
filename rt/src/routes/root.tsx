@@ -4,6 +4,7 @@ import Pagination from "../Pagination";
 import { Person } from "../interfaces";
 import SearchSection from "../components/SearchSection";
 import ProfilePage from "../components/ProfilePage";
+import useLocalStorage from "../hooks/useLocalStorage";  // Импортируем кастомный хук
 
 const Root: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");  // Хранит текущий текст поиска
@@ -12,6 +13,9 @@ const Root: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);  // Хранит состояние загрузки данных
   const [totalPages, setTotalPages] = useState<number>(1);  // Хранит общее количество страниц
   const [currentPage, setCurrentPage] = useState<number>(1);  // Хранит текущую страницу
+
+  // Используем кастомный хук для сохранения и получения searchTerm из localStorage
+  const [storedSearchTerm, setStoredSearchTerm] = useLocalStorage("searchTerm", "");
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -24,10 +28,8 @@ const Root: React.FC = () => {
     setCurrentPage(pageFromUrl);
   }, [pageFromUrl]);
 
-  // Функция для получения данных о людях
   const fetchPeople = useCallback(() => {
     setLoading(true);
-    // Если searchQuery есть, добавляем его в запрос
     const query = searchQuery.trim() ? `?search=${searchQuery.trim()}&page=${currentPage}` : `?page=${currentPage}`;
 
     console.log(`Fetching people with searchTerm: "${searchQuery}" and page: ${currentPage}`);
@@ -66,6 +68,7 @@ const Root: React.FC = () => {
     const trimmedSearchTerm = searchTerm.trim();
     if (trimmedSearchTerm) {
       setSearchParams({ search: trimmedSearchTerm, page: "1" });  // Обновляем URL с новым поисковым запросом
+      setStoredSearchTerm(trimmedSearchTerm);  // Сохраняем поисковый запрос в localStorage
     } else {
       setSearchParams({ page: "1" });  // Если пустой поисковый запрос, очищаем параметры поиска
     }
@@ -84,6 +87,11 @@ const Root: React.FC = () => {
   const handleCloseDetails = () => {
     setSearchParams({ page: currentPage.toString() });  // Обновляем URL при закрытии деталей
   };
+
+  // Устанавливаем searchTerm из localStorage при загрузке компонента
+  useEffect(() => {
+    setSearchTerm(storedSearchTerm);
+  }, [storedSearchTerm]);
 
   return (
     <div className="app">
