@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 interface PersonDetail {
   name: string;
@@ -18,7 +18,7 @@ interface PersonDetail {
 }
 
 export default function Contact() {
-  const { contactId } = useParams(); // Получаем contactId из URL параметра
+  const { contactId } = useParams<{ contactId: string }>();
   const [person, setPerson] = useState<PersonDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,12 +26,16 @@ export default function Contact() {
   useEffect(() => {
     const fetchPerson = async () => {
       try {
-        const response = await fetch(`https://swapi.dev/api/people/${contactId}/`);
+        const response = await fetch(`https://swapi.dev/api/people/?search=${contactId}`);
         if (!response.ok) {
           throw new Error("Not Found");
         }
         const data = await response.json();
-        setPerson(data);
+        if (data.results.length > 0) {
+          setPerson(data.results[0]);
+        } else {
+          setError("Person not found");
+        }
       } catch (error: any) {
         setError(error.message);
       } finally {
@@ -67,9 +71,6 @@ export default function Contact() {
         <p>Gender: {person.gender}</p>
       </div>
       <div>
-        {/* <Form action="edit">
-          <button type="submit">Edit</button>
-        </Form> */}
       </div>
     </div>
   );
