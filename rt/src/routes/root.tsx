@@ -2,10 +2,11 @@ import {
   Outlet,
   NavLink,
   useLoaderData,
-  Form,
-  useNavigation,
+  useLocation,
+  useNavigation
 } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Index from "./index";
 
 interface Person {
   name: string;
@@ -18,13 +19,32 @@ interface LoaderData {
 
 export async function loader() {
   const response = await fetch('https://swapi.dev/api/people/');
+  if (!response.ok) {
+    throw new Response("Failed to fetch data", { status: 500 });
+  }
   const data = await response.json();
   return { people: data.results };
 }
 
 export default function Root() {
   const { people } = useLoaderData() as LoaderData;
+  const location = useLocation();
   const navigation = useNavigation();
+  const [showContact, setShowContact] = useState(true); // Состояние для управления видимостью
+
+  useEffect(() => {
+    // Показываем Index, если путь соответствует / и не содержит contactId
+    if (location.pathname === '/' || location.pathname.startsWith('/people')) {
+      setShowContact(true);
+    } else {
+      setShowContact(false);
+    }
+  }, [location]);
+
+  if (!people) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <div id="sidebar">
@@ -75,7 +95,18 @@ export default function Root() {
         </nav>
       </div>
       <div id="detail" className={navigation.state === "loading" ? "loading" : ""}>
-        <Outlet />
+        {/* Показываем `Contact` если `showContact` равно true, иначе показываем `Index` */}
+        {showContact ? (
+          <>
+            <Outlet />
+            {/* Показываем кнопку `Edit`, если путь содержит контакт */}
+            {location.pathname.startsWith('/people/') && (
+              <button onClick={() => setShowContact(false)}>Edit</button>
+            )}
+          </>
+        ) : (
+          <Index />
+        )}
       </div>
     </>
   );

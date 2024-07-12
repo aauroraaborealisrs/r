@@ -65,16 +65,11 @@ export default function Contact() {
         <p>Eye Color: {person.eye_color}</p>
         <p>Birth Year: {person.birth_year}</p>
         <p>Gender: {person.gender}</p>
-        <p>Homeworld: {person.homeworld}</p>
-        <p>Films: {person.films.join(', ')}</p>
-        <p>Species: {person.species.join(', ')}</p>
-        <p>Vehicles: {person.vehicles.join(', ')}</p>
-        <p>Starships: {person.starships.join(', ')}</p>
       </div>
       <div>
-        <Form action="edit">
+        {/* <Form action="edit">
           <button type="submit">Edit</button>
-        </Form>
+        </Form> */}
       </div>
     </div>
   );
