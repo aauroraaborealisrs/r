@@ -7,15 +7,33 @@ import {
     useNavigation,
   } from "react-router-dom";
 import { getContacts } from "../contacts";
+import React from "react";
 
 export async function loader() {
     const contacts = await getContacts();
     return { contacts };
   }
 
+  interface LoaderData {
+    contact: {
+      id: string; 
+      avatar?: string;
+      first?: string;
+      last?: string;
+      notes?: string;
+    };
+    contacts: {
+      id: string; 
+      avatar?: string;
+      first?: string;
+      last?: string;
+      notes?: string;
+    }[];
+  }
+
 export default function Root() {
-    const { contacts } = useLoaderData();
-    const navigation = useNavigation();
+  const { contact, contacts } = useLoaderData() as LoaderData;
+      const navigation = useNavigation();
     return (
       <>
         <div id="sidebar">
