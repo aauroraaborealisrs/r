@@ -7,11 +7,8 @@ import {
 import "./index.css";
 import Root, { loader as rootLoader } from "./routes/root";
 import ErrorPage from "./error-page";
-import Contact, {
-  loader as contactLoader,
-} from "./routes/contact";
+import Contact from "./routes/contact";
 import Index from "./routes/index";
-
 
 const router = createBrowserRouter([
   {
@@ -22,9 +19,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Index /> },
       {
-        path: "contacts/:contactId",
+        path: "people/:contactId",
         element: <Contact />,
-        loader: contactLoader,
       },
     ],
   },

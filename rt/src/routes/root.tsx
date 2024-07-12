@@ -1,69 +1,60 @@
 import {
-    Outlet,
-    NavLink,
-    useLoaderData,
-    Form,
-    redirect,
-    useNavigation,
-  } from "react-router-dom";
-import { getContacts } from "../contacts";
+  Outlet,
+  NavLink,
+  useLoaderData,
+  Form,
+  useNavigation,
+} from "react-router-dom";
 import React from "react";
 
-export async function loader() {
-    const contacts = await getContacts();
-    return { contacts };
-  }
+interface Person {
+  name: string;
+  url: string;
+}
 
-  interface LoaderData {
-    contact: {
-      id: string; 
-      avatar?: string;
-      first?: string;
-      last?: string;
-      notes?: string;
-    };
-    contacts: {
-      id: string; 
-      avatar?: string;
-      first?: string;
-      last?: string;
-      notes?: string;
-    }[];
-  }
+interface LoaderData {
+  people: Person[];
+}
+
+export async function loader() {
+  const response = await fetch('https://swapi.dev/api/people/');
+  const data = await response.json();
+  return { people: data.results };
+}
 
 export default function Root() {
-  const { contact, contacts } = useLoaderData() as LoaderData;
-      const navigation = useNavigation();
-    return (
-      <>
-        <div id="sidebar">
-          <div>
-            <form id="search-form" role="search">
-              <input
-                id="q"
-                aria-label="Search contacts"
-                placeholder="Search"
-                type="search"
-                name="q"
-              />
-              <div
-                id="search-spinner"
-                aria-hidden
-                hidden={true}
-              />
-              <div
-                className="sr-only"
-                aria-live="polite"
-              ></div>
-            </form>
-          </div>
-          <nav>
-          {contacts.length ? (
+  const { people } = useLoaderData() as LoaderData;
+  const navigation = useNavigation();
+  return (
+    <>
+      <div id="sidebar">
+        <div>
+          <form id="search-form" role="search">
+            <input
+              id="q"
+              aria-label="Search people"
+              placeholder="Search"
+              type="search"
+              name="q"
+            />
+            <div
+              id="search-spinner"
+              aria-hidden
+              hidden={true}
+            />
+            <div
+              className="sr-only"
+              aria-live="polite"
+            ></div>
+          </form>
+        </div>
+        <nav>
+          {people.length ? (
             <ul>
-              {contacts.map((contact) => (
-                <li key={contact.id}>
-                   <NavLink
-                    to={`contacts/${contact.id}`}
+              {people.map((person, index) => (
+                <li key={index}>
+                  <NavLink
+                    to={`people/${index + 1}`}
                     className={({ isActive, isPending }) =>
                       isActive
                         ? "active"
@@ -71,29 +62,21 @@ export default function Root() {
                         ? "pending"
                         : ""
                     }>
-                    {contact.first || contact.last ? (
-                      <>
-                        {contact.first} {contact.last}
-                      </>
-                    ) : (
-                      <i>No Name</i>
-                    )}{" "}
+                    {person.name || <i>No Name</i>}
                   </NavLink>
                 </li>
               ))}
             </ul>
           ) : (
             <p>
-              <i>No contacts</i>
+              <i>No people</i>
             </p>
           )}
-          </nav>
-        </div>
-        <div id="detail" className={
-          navigation.state === "loading" ? "loading" : ""
-        }>
+        </nav>
+      </div>
+      <div id="detail" className={navigation.state === "loading" ? "loading" : ""}>
         <Outlet />
       </div>
-      </>
-    );
-  }
+    </>
+  );
+}
