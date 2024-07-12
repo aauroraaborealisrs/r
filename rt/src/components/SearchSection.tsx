@@ -26,7 +26,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ searchTerm, onSearchTermC
           value={searchTerm}
           onChange={(e) => onSearchTermChange(e.target.value)}
         />
-        <button type="submit">Search</button>
+        {/* <button type="submit">Search</button> */}
       </form>
     </div>
   );

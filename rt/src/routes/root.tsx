@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import Pagination from "../Pagination";  // Импортируем компонент Pagination
+import Pagination from "../Pagination";  
 import { Person } from "../interfaces";
-import SearchSection from "../components/SearchSection"; // Импортируем компонент SearchSection
-import ProfilePage from "../components/ProfilePage";  // Импортируем компонент ProfilePage
-
+import SearchSection from "../components/SearchSection"; 
+import ProfilePage from "../components/ProfilePage"; 
 
 const Root: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,7 +36,7 @@ const Root: React.FC = () => {
       })
       .then((data) => {
         setPeople(data.results || []);
-        setTotalPages(Math.ceil(data.count / 10));  // Обновляем количество страниц на основе общего количества персонажей
+        setTotalPages(Math.ceil(data.count / 10));  
         setError(null);
       })
       .catch((error) => {
@@ -80,7 +79,7 @@ const Root: React.FC = () => {
 
   return (
     <div className="app">
-    <div className="column">
+    <div className="column sidebar">
       <SearchSection
         searchTerm={searchTerm}
         onSearchTermChange={handleInputChange}
@@ -95,6 +94,7 @@ const Root: React.FC = () => {
         ) : error ? (
           <p className="error">{error}</p>
         ) : (
+          <>
           <div className="results-cont">
             <div className="results-names">
               {people.map((person) => (
@@ -107,16 +107,17 @@ const Root: React.FC = () => {
                 </NavLink>
               ))}
             </div>
-            {detailsFromUrl && (
+          </div>
+          </>
+        )}
+      </div>
+      </div>
+      {detailsFromUrl && (
               <div className="details-section">
                 <button className="close-btn" onClick={handleCloseDetails}>Close</button>
                 <ProfilePage name={detailsFromUrl} />
               </div>
-            )}
-          </div>
-        )}
-      </div>
-      </div>
+      )}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
