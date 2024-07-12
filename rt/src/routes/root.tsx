@@ -1,141 +1,129 @@
-import {
-  Outlet,
-  NavLink,
-  useLoaderData,
-  useLocation,
-  useNavigation,
-} from "react-router-dom";
-import React, { useState, useEffect, FormEvent } from "react";
-import Index from "./index";
+import React, { useState, useEffect, useCallback } from "react";
+import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import Pagination from "../Pagination";  // Импортируем компонент Pagination
+import { Person } from "../interfaces";
+import SearchSection from "../components/SearchSection"; // Импортируем компонент SearchSection
+import ProfilePage from "../components/ProfilePage";  // Импортируем компонент ProfilePage
 
-interface Person {
-  name: string;
-  url: string;
-}
 
-interface LoaderData {
-  people: Person[];
-}
+const Root: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [people, setPeople] = useState<Person[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-export async function loader() {
-  const response = await fetch('https://swapi.dev/api/people/');
-  if (!response.ok) {
-    throw new Response("Failed to fetch data", { status: 500 });
-  }
-  const data = await response.json();
-  return { people: data.results };
-}
-
-export default function Root() {
-  const { people } = useLoaderData() as LoaderData;
   const location = useLocation();
-  const navigation = useNavigation();
-  const [showContact, setShowContact] = useState(true); 
-  const [searchTerm, setSearchTerm] = useState(""); 
-  const [filteredPeople, setFilteredPeople] = useState<Person[]>(people);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+  const detailsFromUrl = searchParams.get("details");
 
   useEffect(() => {
-    if (location.pathname === '/' || location.pathname.startsWith('/people')) {
-      setShowContact(true);
-    } else {
-      setShowContact(false);
-    }
-  }, [location]);
+    setCurrentPage(pageFromUrl);
+  }, [pageFromUrl]);
+
+  const fetchPeople = useCallback(() => {
+    setLoading(true);
+    const query = searchTerm.trim() ? `?search=${searchTerm.trim()}&page=${currentPage}` : `?page=${currentPage}`;
+
+    fetch(`https://swapi.dev/api/people/${query}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setPeople(data.results || []);
+        setTotalPages(Math.ceil(data.count / 10));  // Обновляем количество страниц на основе общего количества персонажей
+        setError(null);
+      })
+      .catch((error) => {
+        setError(error.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [searchTerm, currentPage]);
 
   useEffect(() => {
-    setFilteredPeople(
-      people.filter(person =>
-        person.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-  }, [searchTerm, people]);
+    fetchPeople();
+  }, [fetchPeople]);
 
-  const handleSearchChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    const searchQuery = event.target.value.trim();
-    if (searchQuery) {
-      const response = await fetch(`https://swapi.dev/api/people/?search=${searchQuery}`);
-      if (!response.ok) {
-        throw new Response("Failed to fetch data", { status: 500 });
-      }
-      const data = await response.json();
-      setFilteredPeople(data.results);
-    } else {
-      setFilteredPeople(people);
+  const handleInputChange = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+    setSearchParams({ page: "1" });
+  };
+
+  const handleSearch = () => {
+    const trimmedSearchTerm = searchTerm.trim();
+    if (trimmedSearchTerm) {
+      setCurrentPage(1);
+      setSearchParams({ page: "1" });
+      fetchPeople();
     }
   };
 
-  const handleSearchSubmit = (event: FormEvent) => {
-    event.preventDefault();
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      setSearchParams({ page: page.toString() });
+    }
   };
 
-  if (!people) {
-    return <div>Loading...</div>;
-  }
+  const handleCloseDetails = () => {
+    setSearchParams({ page: currentPage.toString() });
+  };
 
   return (
-    <>
-      <div id="sidebar">
-        <div>
-          <form id="search-form" role="search" onSubmit={handleSearchSubmit}>
-            <input
-              id="q"
-              aria-label="Search people"
-              placeholder="Search"
-              type="search"
-              name="q"
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
-            <div
-              id="search-spinner"
-              aria-hidden
-              hidden={true}
-            />
-            <div
-              className="sr-only"
-              aria-live="polite"
-            ></div>
-          </form>
-        </div>
-        <nav>
-          {filteredPeople.length ? (
-            <ul>
-              {filteredPeople.map((person, index) => (
-                <li key={person.name}>
-                  <NavLink
-                    to={`people/${encodeURIComponent(person.name)}`}
-                    className={({ isActive, isPending }) =>
-                      isActive
-                        ? "active"
-                        : isPending
-                        ? "pending"
-                        : ""
-                    }>
-                    {person.name || <i>No Name</i>}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>
-              <i>No people found</i>
-            </p>
-          )}
-        </nav>
-      </div>
-      <div id="detail" className={navigation.state === "loading" ? "loading" : ""}>
-        {showContact ? (
+    <div className="app">
+    <div className="column">
+      <SearchSection
+        searchTerm={searchTerm}
+        onSearchTermChange={handleInputChange}
+        onSearch={handleSearch}
+      />
+      <div className="results-section">
+        {loading ? (
           <>
-            <Outlet />
-            {location.pathname.startsWith('/people/') && (
-              <button onClick={() => setShowContact(false)}>Edit</button>
-            )}
+            <div className="loader-text">Loading...</div>
+            <div className="loader"></div>
           </>
+        ) : error ? (
+          <p className="error">{error}</p>
         ) : (
-          <Index />
+          <div className="results-cont">
+            <div className="results-names">
+              {people.map((person) => (
+                <NavLink
+                  key={person.name}
+                  to={`/?page=${currentPage}&details=${encodeURIComponent(person.name)}`}
+                  className={({ isActive }) => (isActive ? 'active-link' : 'inactive-link')}
+                >
+                  {person.name}
+                </NavLink>
+              ))}
+            </div>
+            {detailsFromUrl && (
+              <div className="details-section">
+                <button className="close-btn" onClick={handleCloseDetails}>Close</button>
+                <ProfilePage name={detailsFromUrl} />
+              </div>
+            )}
+          </div>
         )}
       </div>
-    </>
+      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+    </div>
   );
-}
+};
+
+export default Root;

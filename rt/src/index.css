@@ -380,3 +380,33 @@ i {
   justify-content: center;
   width: 100%;
 }
+
+#search-form{
+  margin: 20px;
+  width: fit-content;
+}
+
+.results-names{
+  display: flex;
+  flex-direction: column;
+}
+
+.results-cont{
+  display: flex;
+  flex-direction: row;
+  justify-content:flex-start;
+  width: 100vw;
+  width: fit-content;
+
+}
+
+.results-names{
+  margin: 20px;
+}
+
+.column{
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  background-color: #a4a4a4;
+}
