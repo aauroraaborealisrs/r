@@ -12,10 +12,10 @@ const SearchSection: React.FC<SearchSectionProps> = ({ searchTerm, onSearchTermC
       <input
         type="text"
         value={searchTerm}
-        onChange={(e) => onSearchTermChange(e.target.value)}  // Обновляем searchTerm при вводе текста
+        onChange={(e) => onSearchTermChange(e.target.value)}
         placeholder="Search for characters"
       />
-      <button onClick={onSearch}>Search</button>  {/* Вызываем fetchPeople при нажатии на кнопку поиска */}
+      <button onClick={onSearch}>Search</button> 
     </div>
   );
 };

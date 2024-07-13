@@ -7,20 +7,18 @@ import {
 import "./index.css";
 import Root from "./routes/root";
 import ErrorPage from "./error-page";
-import Contact from "./routes/contact";
 import Index from "./routes/index";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
-    errorElement: <ErrorPage />,
-    // loader: rootLoader,
+    errorElement: <ErrorPage />, 
     children: [
       { index: true, element: <Index /> },
       {
         path: "people/:contactId",
-        element: <Contact />,
+        errorElement: <ErrorPage />, 
       },
     ],
   },
